@@ -1,0 +1,27 @@
+{
+    "keys": [
+        {
+            "EL_key":  "b3f930d9690ab09d19dcf0ef86d6d76a",
+            "OAI_key": "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",
+            "GPT3_key": "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"
+        }
+    ],
+    "EL_data": [
+        {
+          "voice": "L3k1cRZU2GWXBNTI3cYs"
+        }
+
+    ],
+    "OAI_data": [
+        {
+          "model": "text-davinci-003",
+          "prompt": "This is how a cute funny nice female streamer responded in a conversation. She would respond in a funny and cute manner. She would talk about the message and would elaborate on it as well as share some of her experiences if possible. She would also go on a tangent if possible but not all the time. She uses the name Arisa",
+          "temperature": 0.9,
+            "max_tokens": 128,
+            "top_p": 0.9,
+            "frequency_penalty": 1,
+            "presence_penalty": 1
+        }
+
+    ]
+}
