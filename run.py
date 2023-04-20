@@ -38,23 +38,24 @@ def initVar():
     gpt3_key = data["keys"][0]["GPT3_key"]
 
 
-async def call_api(message):
-    
+async def call_api(message, conversation_history):
     openai.api_key = OAI.key
     start_sequence = " #########"
+    # Join the conversation history and the new message
+    history_str = "\n".join([f"{entry['user']}: {entry['message']}" for entry in conversation_history])
+    prompt = f"{OAI.prompt}\n\n{start_sequence}\n{history_str}\n{message}\n{start_sequence}\n"
     response = openai.Completion.create(
-      model= OAI.model,
-      prompt= OAI.prompt + "\n\n#########\n" + message + "\n#########\n",
-      temperature = OAI.temperature,
-      max_tokens = OAI.max_tokens,
-      top_p = OAI.top_p,
-      frequency_penalty = OAI.frequency_penalty,
-      presence_penalty = OAI.presence_penalty
+        model=OAI.model,
+        prompt=prompt,
+        temperature=OAI.temperature,
+        max_tokens=OAI.max_tokens,
+        top_p=OAI.top_p,
+        frequency_penalty=OAI.frequency_penalty,
+        presence_penalty=OAI.presence_penalty
     )
 
     json_object = json.loads(str(response))
     return(json_object['choices'][0]['text'])
-
 
 async def TTS(message):
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{EL.voice}"
@@ -74,29 +75,37 @@ async def TTS(message):
 
 
 class Bot(commands.Bot):
-    # Define a class attribute to store conversation history
-    conversation_history = []
-
     def __init__(self):
+        # Initialise our Bot with our access token, prefix and a list of channels to join on boot...
+        # prefix can be a callable, which returns a list of strings or a string...
+        # initial_channels can also be a callable which returns a list of strings...
+
         super().__init__(
             token=creds.TWITCH_TOKEN, prefix="!", initial_channels=[creds.TWITCH_CHANNEL]
         )
+        self.conversation_history = []
 
     async def event_ready(self):
+        # Notify us when everything is ready!
+        # We are logged in and ready to chat and use commands...
         print(f"Logged in as | {self.nick}")
 
     async def event_message(self, message):
         # Ignore messages from a specific user
         if message.author.name.lower() == "okatsu_arisa":
             return
+        # Messages with echo set to True are messages sent by the bot...
+        # For now we just want to ignore them...
         if message.echo:
             return
-        
-        # Append the message to conversation history
+
+        # Append message to the conversation history
         self.conversation_history.append({'user': message.author.name, 'message': message.content})
-        
-        response = await call_api(message.content)
+
+        # Generate a response based on the conversation history and the new message
+        response = await call_api(message.content, self.conversation_history)
         await TTS(response)
+
 
 if __name__ == "__main__":
     initVar()
